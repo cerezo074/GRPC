@@ -10,6 +10,6 @@ To compile proto files with grpc plugin you will need to install ***protoc*** co
 
 This will download grpc pluning at $GOPATH/src/google.golang.org/grpc. 
 
-3. To build those protofiles located on source folder to greetpb output folder run make build command.
+3. To build those protofiles located on source folder to greetpb output folder run:
 
 	***make build***
