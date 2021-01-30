@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"service/languagepb"
+	"service/rpc/languagepb"
 
 	"fmt"
 	"log"

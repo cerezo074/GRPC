@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 	"service/core"
-	"service/languagepb"
+	"service/rpc/languagepb"
 
 	"google.golang.org/grpc"
 )
