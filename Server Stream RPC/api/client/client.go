@@ -24,7 +24,7 @@ func main() {
 	}
 
 	defer clientConnection.Close()
-	imageName := "lake.jpg"
+	imageName := "airport.jpg"
 	connection := imagepb.NewImageServiceClient(clientConnection)
 	buffer, err := downloadImage(connection, imageName)
 
