@@ -24,7 +24,7 @@ func main() {
 	}
 
 	defer clientConnection.Close()
-	imageName := "ferry2.jpg"
+	imageName := "lake.jpg"
 	connection := imagepb.NewImageServiceClient(clientConnection)
 	buffer, err := downloadImage(connection, imageName)
 
@@ -68,7 +68,7 @@ func downloadImage(connection imagepb.ImageServiceClient, imageName string) (*by
 }
 
 func process(buffer *bytes.Buffer, imageName string) {
-	imageFile := "./images/" + imageName
+	imageFile := "../../assets/client/" + imageName
 	os.Remove(imageFile)
 
 	if err := ioutil.WriteFile(imageFile, buffer.Bytes(), 777); err != nil {

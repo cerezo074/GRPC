@@ -17,7 +17,7 @@ type ImageHandler struct {
 }
 
 func (*ImageHandler) findImage(filename string, bufferSize int) (*os.File, int64, error) {
-	file, err := os.Open("../../assets/" + filename)
+	file, err := os.Open("../../assets/server/" + filename)
 
 	if err != nil {
 		log.Fatalf("Error opening image file: %v", err)
