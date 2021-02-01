@@ -68,7 +68,8 @@ func downloadImage(connection imagepb.ImageServiceClient, imageName string) (*by
 }
 
 func process(buffer *bytes.Buffer, imageName string) {
-	imageFile := "../../assets/client/" + imageName
+	basePath := "../../assets/client/"
+	imageFile := basePath + imageName
 	os.Remove(imageFile)
 
 	if err := ioutil.WriteFile(imageFile, buffer.Bytes(), 777); err != nil {
