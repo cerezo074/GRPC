@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package=".;imagepb";
+
+message ImageChunk {
+    bytes content = 1;
+	int32 currentSecuence = 2; 
+    int32 lastSecuence = 3;
+    int64 secuenceSize = 4;
+}
+
+message ImageDownloaderRequest {
+    string imageName = 1;
+}
+
+message ImageDownloaderResponse {
+    ImageChunk result = 1;
+}
+
+service ImageService {
+    //Server Stream
+    rpc Download(ImageDownloaderRequest) returns (stream ImageDownloaderResponse) {};
+}
