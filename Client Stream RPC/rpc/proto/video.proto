@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package=".;videopb";
+import "google/protobuf/empty.proto";
+
+message VideoChunk {
+    bytes content = 1;
+	int32 currentSecuence = 2; 
+    int32 lastSecuence = 3;
+    int64 secuenceSize = 4;
+    string filename = 5;
+}
+
+message VideoUploaderRequest {
+    VideoChunk data = 1;
+}
+
+service VideoService {
+    //Client Stream
+    rpc Upload(stream VideoUploaderRequest) returns (google.protobuf.Empty) {};
+}
