@@ -1,4 +1,4 @@
-This example shows you how to build a Server Stream RPC service which works by creating a stream from the server to the client, the idea is to send an image in chunks and the client could rebuild this file. I've tested sending files greater than 4MB of size. The project is structured into 4 folders mainly: 
+This example shows you how to build a Server Stream RPC service which works by creating a stream from the server to the client, the idea is to send an image in chunks and the client needs to rebuild this file. I've tested sending files greater than 41MB of size. The project is structured into 4 folders mainly: 
 
 1. **rpc** folder contains **proto** folder which is where our protofiles are located and the **imagepb** folder where we will have our compiled protofiles.
 
