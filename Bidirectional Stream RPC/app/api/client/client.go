@@ -32,7 +32,7 @@ func main() {
 	}
 
 	defer clientConnection.Close()
-	videoNames := []string{"zoro.jpg", "grimmjow.jpg"}
+	videoNames := []string{"kenpachi.jpg", "grimmjow.jpg", "zoro2.jpg", "zoro.jpg", "hisoka.jpg", "dimitri.jpg"}
 	connection := imagepb.NewImageServiceClient(clientConnection)
 	uploadImages(connection, videoNames...)
 }
@@ -131,7 +131,7 @@ func runStream(requestStream imagepb.ImageService_EffectClient, file uploadFile,
 			return err
 		}
 
-		log.Printf("Sent chunk in secuence %d from total %d secuences", i, file.chunks)
+		log.Printf("Sent chunk for filename %s, in secuence %d from total %d secuences", file.name, i, file.chunks)
 	}
 
 	return nil
@@ -152,19 +152,19 @@ func receiveImageFiles(waitChannel chan<- struct{}, uploadStream imagepb.ImageSe
 			break
 		}
 
-		log.Printf("Receive new chunk data, secuence %d from total %d", chunkResponse.Data.CurrentSecuence, chunkResponse.Data.LastSecuence)
-
-		if _, err = buffer.Write(chunkResponse.Data.Content); err != nil {
-			log.Printf("Error writing chunk data, %v", err)
-			break
-		}
-
 		if currentFileName == "" {
 			currentFileName = chunkResponse.Data.Filename
 		} else if currentFileName != chunkResponse.Data.Filename {
 			go saveFile(buffer.Bytes(), currentFileName)
 			buffer = &bytes.Buffer{}
 			currentFileName = chunkResponse.Data.Filename
+		}
+
+		log.Printf("Receive new chunk data from filename %s, secuence %d from total %d", chunkResponse.Data.Filename, chunkResponse.Data.CurrentSecuence, chunkResponse.Data.LastSecuence)
+
+		if _, err = buffer.Write(chunkResponse.Data.Content); err != nil {
+			log.Printf("Error writing chunk data, %v", err)
+			break
 		}
 	}
 

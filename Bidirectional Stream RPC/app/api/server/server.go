@@ -43,18 +43,18 @@ func processStream(fileStreamRequest imagepb.ImageService_EffectServer) error {
 			return err
 		}
 
-		log.Printf("Receive new chunk data, secuence %d from total %d", chunkRequest.Data.CurrentSecuence, chunkRequest.Data.LastSecuence)
-
-		if _, err = buffer.Write(chunkRequest.Data.Content); err != nil {
-			return err
-		}
-
 		if currentFileName == "" {
 			currentFileName = chunkRequest.Data.Filename
 		} else if currentFileName != chunkRequest.Data.Filename {
-			go applyEffect(fileStreamRequest, buffer.Bytes(), currentFileName)
+			err = applyEffect(fileStreamRequest, buffer.Bytes(), currentFileName)
 			buffer = &bytes.Buffer{}
 			currentFileName = chunkRequest.Data.Filename
+		}
+
+		log.Printf("Receive new chunk data from filename %s, secuence %d from total %d", chunkRequest.Data.Filename, chunkRequest.Data.CurrentSecuence, chunkRequest.Data.LastSecuence)
+
+		if _, err = buffer.Write(chunkRequest.Data.Content); err != nil {
+			return err
 		}
 	}
 }
@@ -90,7 +90,7 @@ func applyEffect(responseStream imagepb.ImageService_EffectServer, rawData []byt
 			return err
 		}
 
-		log.Printf("Sent chunk in secuence %d from total %d secuences", i, chunks)
+		log.Printf("Sent chunk for filename %s, with secuence for %d from total %d secuences", imageName, i, chunks)
 	}
 
 	return nil
