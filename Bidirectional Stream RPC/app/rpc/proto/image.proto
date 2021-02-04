@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package=".;videopb";
+option go_package=".;imagepb";
 
 message ImageChunk {
     bytes content = 1;

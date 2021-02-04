@@ -1,77 +1,116 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"io"
-	"io/ioutil"
 	"log"
+	"math"
 	"net"
-	"os"
-	"service/rpc/videopb"
+	"service/rpc/imagepb"
 
+	"github.com/anthonynsimon/bild/effect"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type VideoHandler struct {
-	videopb.UnsafeVideoServiceServer
+type ImageHandler struct {
+	imagepb.UnsafeImageServiceServer
 }
 
-func (handler *VideoHandler) Upload(fileStreamRequest videopb.VideoService_UploadServer) error {
-	buffer, filename, err := processStream(fileStreamRequest)
+func (handler *ImageHandler) Effect(fileStreamRequest imagepb.ImageService_EffectServer) error {
+	err := processStream(fileStreamRequest)
 	if err != nil {
 		log.Printf("Error receiving chunk data, %v", err)
 		return err
 	}
 
-	err = processBuffer(buffer, filename)
-	if err != nil {
-		log.Printf("Error creating file, %v", err)
-		return err
-	}
-
-	fileStreamRequest.SendAndClose(&emptypb.Empty{})
 	return nil
 }
 
-func processStream(fileStreamRequest videopb.VideoService_UploadServer) (*bytes.Buffer, string, error) {
+func processStream(fileStreamRequest imagepb.ImageService_EffectServer) error {
 	buffer := &bytes.Buffer{}
-	filename := ""
+	currentFileName := ""
 
 	for {
 		chunkRequest, err := fileStreamRequest.Recv()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return nil, "", err
+		if err != nil {
+			if err == io.EOF {
+				err = applyEffect(fileStreamRequest, buffer.Bytes(), currentFileName)
+			}
+			return err
 		}
 
 		log.Printf("Receive new chunk data, secuence %d from total %d", chunkRequest.Data.CurrentSecuence, chunkRequest.Data.LastSecuence)
 
 		if _, err = buffer.Write(chunkRequest.Data.Content); err != nil {
-			return nil, "", err
+			return err
 		}
 
-		if filename == "" {
-			filename = chunkRequest.Data.Filename
+		if currentFileName == "" {
+			currentFileName = chunkRequest.Data.Filename
+		} else if currentFileName != chunkRequest.Data.Filename {
+			go applyEffect(fileStreamRequest, buffer.Bytes(), currentFileName)
+			buffer = &bytes.Buffer{}
+			currentFileName = chunkRequest.Data.Filename
 		}
 	}
-
-	return buffer, filename, nil
 }
 
-func processBuffer(buffer *bytes.Buffer, videoName string) error {
-	basePath := "../../assets/server/"
-	videoFile := basePath + videoName
-	os.Remove(videoFile)
+func applyEffect(responseStream imagepb.ImageService_EffectServer, rawData []byte, imageName string) error {
+	img, _, _ := image.Decode(bytes.NewReader(rawData))
+	result := effect.EdgeDetection(img, 2.0)
+	rawImage, _ := getBytes(result)
+	bufferSize := 64 * 1024
+	buffer := make([]byte, bufferSize)
+	chunks := int64(math.Ceil(float64(len(rawImage)) / float64(bufferSize)))
+	dataToSend := bytes.NewReader(rawImage)
 
-	if err := ioutil.WriteFile(videoFile, buffer.Bytes(), 777); err != nil {
-		return err
+	for i := int64(1); i <= chunks; i++ {
+		bytesRead, err := dataToSend.Read(buffer)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+
+		request := &imagepb.ImageResponse{
+			Data: &imagepb.ImageChunk{
+				Content:         buffer[:bytesRead],
+				CurrentSecuence: int32(i),
+				LastSecuence:    int32(chunks),
+				SecuenceSize:    int64(bufferSize),
+				Filename:        imageName,
+			},
+		}
+
+		if err := responseStream.Send(request); err != nil {
+			return err
+		}
+
+		log.Printf("Sent chunk in secuence %d from total %d secuences", i, chunks)
 	}
 
-	log.Println("File " + videoName + " created successfully")
 	return nil
+}
+
+func getBytes(image image.Image) ([]byte, error) {
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	if image == nil {
+		return nil, fmt.Errorf("image is nil")
+	}
+
+	err := jpeg.Encode(w, image, &jpeg.Options{100})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return b.Bytes(), nil
 }
 
 func main() {
@@ -82,7 +121,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	videopb.RegisterVideoServiceServer(grpcServer, &VideoHandler{})
+	imagepb.RegisterImageServiceServer(grpcServer, &ImageHandler{})
 	fmt.Println("Server Listening...")
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve, %v", err)
