@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package=".;languagepb";
+
+message Language {
+    string name = 1;
+	string script = 2; 
+	double confidence = 3;
+}
+
+message LanguageDetectorRequest {
+    string text = 1;
+}
+
+message LanguageDetectorResponse {
+    Language result = 1;
+}
+
+service LanguageService {
+    //Unary, returns invalid argument error 
+    rpc Detect(LanguageDetectorRequest) returns (LanguageDetectorResponse) {};
+    rpc DetectWithDeadline(LanguageDetectorRequest) returns (LanguageDetectorResponse) {};
+}
