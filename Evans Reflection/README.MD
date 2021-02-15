@@ -1,3 +1,9 @@
+To interact with Evans Reflection utility follow the following steps:
+
+1. Install Evans CLI from https://github.com/ktr0731/evans
+2. Run the server in terminal ***go run api/server.go***
+3. Open another terminal, and type if your server use tls encryption ***evans --tls --cacert app/cmd/tls/output/ca.crt --servername localhost -r -p 50051*** otherwise omit ***--tls --cacert app/cmd/tls/output/ca.crt*** in this way we are using evans in REPL mode ***-r***.
+
 This example shows you how to build a Unary RPC server that works like Rest(1 Request -> 1 Response), the idea is to send a text from any language and this web service can tell you what language it belongs to, this project is structured into 2 folders: 
 
 1. **demo** folder shows you a simple app in which you can interact with the [Language Detector library](https://github.com/abadojack/whatlanggo), you just need to run *main.go* golang file. 
