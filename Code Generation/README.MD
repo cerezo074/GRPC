@@ -14,5 +14,4 @@ This will download grpc pluning at $GOPATH/src/google.golang.org/grpc.
 
 	***make build***
 	
-***NOTE:*** If you got stuck with this error, in some of your proto files, look over your option go_package definition.
-Somehow the protoc compiler has changed the way it works with relative packages. For more information open this [link](https://github.com/techschool/pcbook-go/issues/3#issuecomment-823206034)
+**NOTE:** If you got stuck with this error ***The import path must contain at least one forward slash ('/') character.***. In some of your proto files, look over your **option go_package** definition. Somehow the protoc compiler has changed the way it works with relative packages. For more information open this [link](https://github.com/techschool/pcbook-go/issues/3#issuecomment-823206034)
